@@ -1,21 +1,38 @@
+# Compiler
 CXX = g++
-CXXFLAGS = -std=c++17 -g
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
-COMMONOBJS = 
 
-testColoredTextBox.exe: testColoredTextBox.o $(COMMONOBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-	./$@
+# Compiler flags
+CXXFLAGS = -std=c++17 -I. -g
 
-testStreetTile.exe: testStreetTile.o $(COMMONOBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-	./$@
+# SFML library flags
+SFML_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-%.o : %.cpp %.hpp %.h
-	$(CXX) $(CXXFLAGS) $< -o $@
+# Source files
+SRCS = main.cpp StreetTile.cpp TextBox.cpp Board.cpp Player.cpp MonopolyGame.cpp
 
-testColoredTextBox.o: coloredTextBox.hpp streetTile.hpp
-testStreetTile.o: streetTile.hpp coloredTextBox.hpp
+# Object files
+OBJS = $(SRCS:.cpp=.o)
 
+# Executable name
+TARGET = MonopolyGame
+
+# Default target
+all : $(TARGET)
+
+# Link object files to create the executable
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(SFML_FLAGS)
+
+# Compile source files into object files
+%.o: %.cpp %.hpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# dependencies
+
+
+# Clean up build files
 clean:
-	rm *.o *.exe
+	rm -f $(OBJS) $(TARGET)
+
+# Phony targets
+.PHONY: all clean

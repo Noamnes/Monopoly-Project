@@ -1,187 +1,8 @@
-#pragma once
-
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "TextBox.hpp"
 
-//* CLASS + DEFINITIONS
-/**
- * @class ColoredTextBox
- * @brief A class that represents a text box with multiple colored texts.
- *
- * The ColoredTextBox class allows you to display multiple pieces of text with different alignments and directions within a specified bounding rectangle.
- */
-class ColoredTextBox : public sf::Drawable, public sf::Transformable{
-public:
-
-    /** @enum Alignment
-     * @brief Enumeration for horizontal text alignment.
-     */
-    enum class Alignment{
-        Left,
-        Center,
-        Right
-    };
-
-    /**
-     * @enum TextDirection
-     * @brief Enumeration for text direction (rotation).
-     */
-    enum class TextDirection{
-        Up,    ///< 0 degrees rotation
-        Left,  ///< 90 degrees rotation
-        Down,  ///< 180 degrees rotation
-        Right  ///< 270 degrees rotation
-    };
-
-    //* CONSTRUCTORS
-        /** @brief Constructs a ColoredTextBox with the specified bounds.
-         *
-         * @param bounds The bounding rectangle for the text box.
-         */
-        ColoredTextBox(const sf::FloatRect& bounds);
-
-        /** @brief Constructs a ColoredTextBox with bounds, texts, direction, and background color.
-         *
-         * @param bounds The bounding rectangle for the text box.
-         * @param texts A vector of pairs of sf::Text and Alignment to be displayed.
-         * @param direction The direction from which the text is read (default is Up).
-         * @param backgroundColor The background color of the text box (default is transparent).
-         */
-        ColoredTextBox(
-            const sf::FloatRect& bounds,
-            const std::vector<std::pair<sf::Text, Alignment>>& texts,
-            TextDirection direction = TextDirection::Up,
-            const sf::Color& backgroundColor = sf::Color::Transparent);
-
-    //* NECCECERY
-
-        /** @brief Sets the texts to be displayed in the text box, overwriting any existing texts.
-         *
-         * @param texts A vector of pairs of sf::Text and Alignment.
-         */
-        void setTexts(const std::vector<std::pair<sf::Text, Alignment>>& texts);
-
-        /** @brief Adds a text with the specified alignment to the text box.
-         *
-         * @param text The sf::Text to add.
-         * @param alignment The alignment for the text (default is Left).
-         */
-        void addText(const sf::Text& text, Alignment alignment = Alignment::Left);
-    
-        /**
-         * @brief Sets the text direction (rotation) for the text box.
-         *
-         * @param direction The TextDirection to set.
-         */
-        void setTextDirection(TextDirection direction);
-    
-    //* NOT NECCECERY
-
-        /**
-         * @brief Sets the bounds of the text box.
-         *
-         * @param bounds The new bounding rectangle.
-         */
-        void setBounds(const sf::FloatRect& bounds);
-
-        /**
-         * @brief Sets the background fill color of the text box.
-         *
-         * @param color The sf::Color to set as the background fill color.
-         */
-        void setBackgroundColor(const sf::Color& color);
-
-        /**
-         * @brief Sets the outline color of the text box.
-         *
-         * @param color The sf::Color to set as the outline color.
-         */
-        void setOutlineColor(const sf::Color& color);
-
-        /**
-         * @brief Sets the outline thickness of the text box.
-         *
-         * @param thickness The thickness of the outline.
-         */
-        void setOutlineThickness(float thickness);
-
-private:
-    /** @brief Struct to hold a text and its alignment. */
-    struct TextEntry{
-        sf::Text text;
-        Alignment alignment;
-    };
-
-    /** @brief Draws the ColoredTextBox to the render target.
-     *
-     * @param target The render target to draw to.
-     * @param states The render states to use for drawing.
-     */
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-    /** @brief Updates the display texts based on the current state.*/
-    void update() const;
-
-    /** @brief Computes the maximum font size that will fit all texts within the bounds.
-     *
-     *  @return The maximum font size.
-     */
-    unsigned int computeMaxFontSize() const;
-
-    /** @brief Gets the rotation angle in degrees based on the text direction.
-     *
-     * @return The rotation angle in degrees.
-     */
-    float getRotationAngle() const;
-
-    /** @brief Adjusts the position and alignment of a text within the text box.
-     *
-     * @param text The text to adjust.
-     * @param lb The local bounds of the text.
-     * @param alignment The alignment of the text.
-     * @param positionOffset The accumulated offset along the stacking direction.
-     */
-    void adjustTextPosition(
-        sf::Text& text,
-        const sf::FloatRect& lb,
-        Alignment alignment,
-        float positionOffset) const;
-
-    
-    //* MEMBERS
-
-        /** @brief The bounds of the text box.*/
-        sf::FloatRect m_bounds;
-
-        /** @brief The direction from which the text is read.*/
-        TextDirection m_textDirection;
-
-        /** @brief The vector of text entries to be displayed.
-         * 
-         * the texts here aren't configured for display
-         */
-        std::vector<TextEntry> m_textEntries;
-
-        /** @brief The vector of texts ready for display.
-         *
-         * This vector is mutable because it is updated in the const draw function.
-         */
-        mutable std::vector<sf::Text> m_displayTexts;
-
-        /** @brief Flag indicating whether the display texts need to be updated before drawing.
-         *
-         *  needed to avoid udating the textbox when it's unnecessary
-         */  
-        mutable bool m_needsUpdate;
-
-        /** @brief The background rectangle shape of the text box. */
-        sf::RectangleShape m_background;
-};
-
-
-//* IMPLEMENTATION
-
-ColoredTextBox::ColoredTextBox(const sf::FloatRect& bounds)
+TextBox::TextBox(const sf::FloatRect& bounds)
     : m_bounds(bounds)
     , m_textDirection(TextDirection::Up)
     , m_needsUpdate(true)
@@ -194,7 +15,7 @@ ColoredTextBox::ColoredTextBox(const sf::FloatRect& bounds)
     m_background.setOutlineThickness(0);
 }
 
-ColoredTextBox::ColoredTextBox(
+TextBox::TextBox(
     const sf::FloatRect& bounds,
     const std::vector<std::pair<sf::Text, Alignment>>& texts,
     TextDirection direction,
@@ -213,7 +34,7 @@ ColoredTextBox::ColoredTextBox(
     m_background.setOutlineThickness(0);
 }
 
-void ColoredTextBox::setTextDirection(TextDirection direction)
+void TextBox::setTextDirection(TextDirection direction)
 {
     if (m_textDirection != direction)
     {
@@ -222,13 +43,13 @@ void ColoredTextBox::setTextDirection(TextDirection direction)
     }
 }
 
-void ColoredTextBox::addText(const sf::Text& text, Alignment alignment)
+void TextBox::addText(const sf::Text& text, Alignment alignment)
 {
     m_textEntries.push_back({ text, alignment });
     m_needsUpdate = true;
 }
 
-void ColoredTextBox::setBounds(const sf::FloatRect& bounds)
+void TextBox::setBounds(const sf::FloatRect& bounds)
 {
     m_bounds = bounds;
     m_background.setPosition(sf::Vector2f(m_bounds.left, m_bounds.top));
@@ -236,7 +57,7 @@ void ColoredTextBox::setBounds(const sf::FloatRect& bounds)
     m_needsUpdate = true;
 }
 
-void ColoredTextBox::setTexts(const std::vector<std::pair<sf::Text, Alignment>>& texts){
+void TextBox::setTexts(const std::vector<std::pair<sf::Text, Alignment>>& texts){
     m_textEntries.clear();
     for (const auto& pair : texts)
     {
@@ -245,22 +66,22 @@ void ColoredTextBox::setTexts(const std::vector<std::pair<sf::Text, Alignment>>&
     m_needsUpdate = true;
 }
 
-void ColoredTextBox::setBackgroundColor(const sf::Color& color)
+void TextBox::setBackgroundColor(const sf::Color& color)
 {
     m_background.setFillColor(color);
 }
 
-void ColoredTextBox::setOutlineColor(const sf::Color& color)
+void TextBox::setOutlineColor(const sf::Color& color)
 {
     m_background.setOutlineColor(color);
 }
 
-void ColoredTextBox::setOutlineThickness(float thickness)
+void TextBox::setOutlineThickness(float thickness)
 {
     m_background.setOutlineThickness(thickness);
 }
 
-void ColoredTextBox::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void TextBox::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     if (m_needsUpdate)
     {
@@ -279,7 +100,7 @@ void ColoredTextBox::draw(sf::RenderTarget& target, sf::RenderStates states) con
     }
 }
 
-void ColoredTextBox::update() const
+void TextBox::update() const
 {
     m_displayTexts.clear();
 
@@ -329,7 +150,7 @@ void ColoredTextBox::update() const
     }
 }
 
-unsigned int ColoredTextBox::computeMaxFontSize() const
+unsigned int TextBox::computeMaxFontSize() const
 {
     if (m_textEntries.empty())
         return 0;
@@ -433,7 +254,7 @@ unsigned int ColoredTextBox::computeMaxFontSize() const
     return bestFontSize;
 }
 
-float ColoredTextBox::getRotationAngle() const
+float TextBox::getRotationAngle() const
 {
     switch (m_textDirection)
     {
@@ -449,7 +270,7 @@ float ColoredTextBox::getRotationAngle() const
     return 0.f;
 }
 
-void ColoredTextBox::adjustTextPosition(
+void TextBox::adjustTextPosition(
     sf::Text& text,
     const sf::FloatRect& lb,
     Alignment alignment,

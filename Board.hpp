@@ -1,112 +1,83 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <vector>
 #include <memory>
+#include <vector>
 
-#include "Tile.hpp"
+#include "StreetTile.hpp"
 
-class Board : public sf::Drawable, sf::Transformable{
-    public:
-        Board(sf::Vector2u windowSize, float cornersRatio, sf::Font& font);
-        /** @brief creates the game tiles. */
-        void createTiles();
-        void move(Player& player, unsigned int steps);
-    private:
-        /** @brief draws the game board. */
-        virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        
-        //* MEMBERS
-            // Edges
-            std::vector<std::shared_ptr<Tile>> m_downEdge;
-            std::vector<std::shared_ptr<Tile>> m_leftEdge;
-            std::vector<std::shared_ptr<Tile>> m_upEdge;
-            std::vector<std::shared_ptr<Tile>> m_rightEdge;
+class Player;  // Forward declaration for Player class
 
-            // Corners
-            std::shared_ptr<Tile> m_bottomRightCorner;
-            std::shared_ptr<Tile> m_bottomLeftCorner;
-            std::shared_ptr<Tile> m_topLeftCorner;
-            std::shared_ptr<Tile> m_topRightCorner;
+class Board : public sf::Drawable, public sf::Transformable {
+public:
+    /** @brief creates a squere Board with the given edges size and font
+     * 
+     * @param edgeSize the size of the edges of the board
+     * @param cornersRatio the ratio of the squere corners of the board to the edges
+     * @param font the font to be used for the text on the board
+     */
+    Board(float edgeSize, float cornersRatio, sf::Font& font);
+    /** @brief create the tiles of the standard monopoly board */
+    void createTiles(); 
+    /** @brief Calculates the tile a player would land on if they move dicesum steps from their currTile
+     * 
+     * @param currTile the tile the player is currently on
+     * @param diceSum the sum of the dice rolls
+    */
+    StreetTile* getTileAfterMove(StreetTile* currTile, unsigned int diceSum);
+    /** @brief Moves the player to the new tile
+     * 
+     * @param player the player to move
+     * @param currTile the tile the player is currently on
+     * @param newTile the tile the player is moving to
+     */
+    void movePlayer(Player& player, StreetTile* currTile, StreetTile* newTile);
+    /** @brief move the given player to the jail tail.
+     * 
+     * @param player the player to move to jail
+    */
+    void movePlayerToJail(Player& player);
+    /** @brief get the jail tile of the board
+     * 
+     * @return the jail tile of the board
+     */
+    StreetTile* getJailTile();
+    
+    /** @brief whether the given player has all the streets of a given color.
+     * 
+     * @param player the player to check
+     * @param color the color to check
+    */
+    bool hasAllStreetOfColor(Player& player, sf::Color color);
 
+private:
+    // Inherited via Drawable
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override; // Implemented
+    /** @brief adjust all the graphical components of the board 
+     * 
+     * This function should be called right after a change to the data has accured.
+    */
+    void adjustAllComponents();
+    /** @brief set the grapical attributes of a horizontal edge of the board(Up or Down).*/
+    void setHorizontalEdgeBounds(std::vector<std::unique_ptr<StreetTile>>& edge, sf::FloatRect bounds);
+    /** @brief set the grapical attributes of a vertical edge of the board(Left or Right).*/
+    void setVerticalEdgeBounds(std::vector<std::unique_ptr<StreetTile>>& edge, sf::FloatRect bounds);
+
+    // Members
+    std::vector<std::unique_ptr<StreetTile>> m_downEdge;
+    std::vector<std::unique_ptr<StreetTile>> m_leftEdge;
+    std::vector<std::unique_ptr<StreetTile>> m_upEdge;
+    std::vector<std::unique_ptr<StreetTile>> m_rightEdge;
+
+    std::unique_ptr<StreetTile> m_BottomRightCorner; // Corrected spelling
+    std::unique_ptr<StreetTile> m_BottomLeftCorner;  // Corrected spelling
+    std::unique_ptr<StreetTile> m_TopLeftCorner;
+    std::unique_ptr<StreetTile> m_TopRightCorner;
+
+    // the size of the edges of the board
+    float m_edgeSize;
+    // the presentage of the squere corners of the board to the edges
+    float m_cornersRatio;
+
+    sf::Font& m_font;
 };
-
-Board::Board(sf::Vector2u windowSize, float cornersRatio, sf::Font& font): m_font(font){
-    
-}
-
-void Board::createTiles(){
-    // create the corners
-    //? not sure what is the class for the corners
-    m_bottomRightCorner = std::make_unique<?>(/*params*/);
-    m_bottomLeftCorner = std::make_unique<?>(/*params*/);
-    m_topLeftCorner = std::make_unique<?>(/*params*/);
-    m_topRightCorner = std::make_unique<?>(/*params*/);
-
-    // create the edges
-    
-    // down edge
-    m_downEdge.push_back(std::make_unique<StreetTile>("Ofakim", 100, m_font, StreetTile::ReadingDirection::Up, sf::Color::Brown));
-    m_downEdge.push_back(std::make_unique<CommunityTile>("Community", m_font)); //! need to create
-    m_downEdge.push_back(std::make_unique<StreetTile>("Netivot", 60, m_font, StreetTile::ReadingDirection::Up, sf::Color::Brown));
-    m_downEdge.push_back(std::make_unique<TaxTile>("Income Tax", 200, m_font)); //! need to create
-    m_downEdge.push_back(std::make_unique<TrainTile>("Western Negev Train", 200, m_font)); //! need to create
-    m_downEdge.push_back(std::make_unique<StreetTile>("Ashkelon", 50, m_font, StreetTile::ReadingDirection::Up, sf::Color::LightBlue));
-    m_downEdge.push_back(std::make_unique<ChanceTile>("Chance", m_font)); //! need to create
-    m_downEdge.push_back(std::make_unique<StreetTile>("Nitzanim", 50, m_font, StreetTile::ReadingDirection::Up, sf::Color::LightBlue));
-    m_downEdge.push_back(std::make_unique<StreetTile>("Palmachim", 60, m_font, StreetTile::ReadingDirection::Up, sf::Color::LightBlue));
-    m_downEdge.push_back(std::make_unique<JailTile>("Jail", m_font)); //! need to create
-
-    // left edge
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Eilat", 100, m_font, StreetTile::ReadingDirection::Left, sf::Color::Pink));
-    m_leftEdge.push_back(std::make_unique<UtilityTile>("Electric Company", 150, m_font)); //! need to create
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Yotvata", 60, m_font, StreetTile::ReadingDirection::Left, sf::Color::Pink));
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Mitzpe Ramon", 60, m_font, StreetTile::ReadingDirection::Left, sf::Color::Pink));
-    m_leftEdge.push_back(std::make_unique<TrainTile>("South Negev Train", 200, m_font)); //! need to create
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Sde Boker", 50, m_font, StreetTile::ReadingDirection::Left, sf::Color::Orange));
-    m_leftEdge.push_back(std::make_unique<CommunityTile>("Community", m_font)); //! need to create
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Dimona", 50, m_font, StreetTile::ReadingDirection::Left, sf::Color::Orange));
-    m_leftEdge.push_back(std::make_unique<StreetTile>("Arad", 60, m_font, StreetTile::ReadingDirection::Left, sf::Color::Orange));
-    
-    // up edge
-    m_upEdge.push_back(std::make_unique<StreetTile>("Haifa", 100, m_font, StreetTile::ReadingDirection::Down, sf::Color::Red));
-    m_upEdge.push_back(std::make_unique<ChanceTile>("Chance", m_font)); //! need to create
-    m_upEdge.push_back(std::make_unique<StreetTile>("Kiryat Ata", 60, m_font, StreetTile::ReadingDirection::Down, sf::Color::Red));
-    m_upEdge.push_back(std::make_unique<StreetTile>("Kiryat Motzkin", 60, m_font, StreetTile::ReadingDirection::Down, sf::Color::Red));
-    m_upEdge.push_back(std::make_unique<TrainTile>("North Train", 200, m_font)); //! need to create
-    m_upEdge.push_back(std::make_unique<StreetTile>("Tiberias", 50, m_font, StreetTile::ReadingDirection::Down, sf::Color::Yellow));
-    m_upEdge.push_back(std::make_unique<StreetTile>("Karmiel", 50, m_font, StreetTile::ReadingDirection::Down, sf::Color::Yellow));
-    m_upEdge.push_back(std::make_unique<UtilityTile>("Water Company", 150, m_font)); //! need to create
-    m_upEdge.push_back(std::make_unique<StreetTile>("Tzfat", 60, m_font, StreetTile::ReadingDirection::Down, sf::Color::Yellow));
-
-    // right edge
-    m_rightEdge.push_back(std::make_unique<StreetTile>("Tel Aviv", 100, m_font, StreetTile::ReadingDirection::Right, sf::Color::Green));
-    m_rightEdge.push_back(std::make_unique<StreetTile>("Ramat Gan", 60, m_font, StreetTile::ReadingDirection::Right, sf::Color::Green));
-    m_rightEdge.push_back(std::make_unique<CommunityTile>("Community", m_font)); //! need to create
-    m_rightEdge.push_back(std::make_unique<StreetTile>("Holon", 60, m_font, StreetTile::ReadingDirection::Right, sf::Color::Green));
-    m_rightEdge.push_back(std::make_unique<TrainTile>("Center Train", 200, m_font)); //! need to create
-    m_rightEdge.push_back(std::make_unique<ChanceTile>("Chance", m_font)); //! need to create
-    m_rightEdge.push_back(std::make_unique<StreetTile>("Rishon LeZion", 50, m_font, StreetTile::ReadingDirection::Right, sf::Color::DarkBlue));
-    m_rightEdge.push_back(std::make_unique<TaxTile>("Luxury Tax", 100, m_font)); //! need to create
-    m_rightEdge.push_back(std::make_unique<StreetTile>("Rehovot", 50, m_font, StreetTile::ReadingDirection::Right, sf::Color::DarkBlue));
-
-}
-
-void Board::move(Player& player, unsigned int steps){
-    // first: clear the m_landingPlayerName from curr tile and set it in the new tile, 
-    // second: set the player positon tile to new tile
-
-    // get the current tile
-    auto currTile = player->getTile();
-
-    // get the new tile
-    auto newTile = getNextTile(currTile, steps);
-
-    // clear the m_landingPlayerName from curr tile
-    currTile->setLandingPlayerName("");
-
-    // set the m_landingPlayerName in the new tile
-    newTile->setLandingPlayerName(player->getName());
-
-    player->setTile(newTile);
-}
